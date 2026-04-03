@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "manikandankk12/python-cicd-app"
+        DOCKER_IMAGE = "manikandan1210/python-cicd-app"
         KUBE_NAMESPACE = "default"
     }
 
