@@ -7,6 +7,7 @@ pipeline {
         FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
         DEPLOYMENT_NAME = "python-app"
         K8S_NAMESPACE = "default"
+	KEEP_TAGS = "3"
     }
 
     stages {
