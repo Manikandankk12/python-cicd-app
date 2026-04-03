@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "manikandan1210/python-cicd-app"
-        KUBE_NAMESPACE = "default"
+        IMAGE_NAME = "manikandan1210/python-cicd-app"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
+        DEPLOYMENT_NAME = "python-cicd"
+        K8S_NAMESPACE = "default"
     }
 
     stages {
@@ -18,33 +21,22 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh '''
-                python3 --version
                 python3 -m pip install --upgrade pip
                 python3 -m pip install -r requirements.txt
                 '''
             }
         }
 
-        stage('Run Unit Tests') {
+        stage('Run Tests') {
             steps {
-                sh '''
-                python3 -m pytest -v
-                '''
-            }
-        }
-
-        stage('Lint Code') {
-            steps {
-                sh '''
-                python3 -m flake8 app || true
-                '''
+                sh 'python3 -m pytest -v'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t $DOCKER_IMAGE:latest .
+                docker build -t $FULL_IMAGE .
                 '''
             }
         }
@@ -58,7 +50,7 @@ pipeline {
                 )]) {
                     sh '''
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push $DOCKER_IMAGE:latest
+                    docker push $FULL_IMAGE
                     '''
                 }
             }
@@ -67,19 +59,29 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                kubectl apply -f kubernetes/deployment.yaml
-                kubectl apply -f kubernetes/service.yaml
+                kubectl set image deployment/$DEPLOYMENT_NAME \
+                python-cicd=$FULL_IMAGE \
+                -n $K8S_NAMESPACE
+
+                kubectl rollout status deployment/$DEPLOYMENT_NAME \
+                -n $K8S_NAMESPACE --timeout=60s
                 '''
             }
         }
     }
 
     post {
-        success {
-            echo "✅ CI/CD Pipeline completed successfully"
-        }
         failure {
-            echo "❌ CI/CD Pipeline failed"
+            echo "❌ Deployment failed – rolling back"
+            sh '''
+            kubectl rollout undo deployment/$DEPLOYMENT_NAME \
+            -n $K8S_NAMESPACE
+            '''
+        }
+
+        success {
+            echo "✅ Deployment successful with image $FULL_IMAGE"
         }
     }
 }
+``

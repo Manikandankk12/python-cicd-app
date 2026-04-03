@@ -13,7 +13,7 @@ spec:
         app: python-app
     spec:
       containers:
-        - name: app
+        - name: python-cicd
           image: manikandan1210/python-cicd-app:latest
           imagePullPolicy: Always
           ports:
