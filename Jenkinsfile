@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME = "manikandan1210/python-cicd-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
         FULL_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
-        DEPLOYMENT_NAME = "python-cicd"
+        DEPLOYMENT_NAME = "python-app"
         K8S_NAMESPACE = "default"
     }
 
