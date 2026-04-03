@@ -19,8 +19,8 @@ pipeline {
             steps {
                 sh '''
                 python3 --version
-                pip install --upgrade pip
-                pip install -r requirements.txt
+                python3 -m pip install --upgrade pip
+                python3 -m pip install -r requirements.txt
                 '''
             }
         }
@@ -28,7 +28,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 sh '''
-                pytest -v
+                python3 -m pytest -v
                 '''
             }
         }
@@ -36,7 +36,7 @@ pipeline {
         stage('Lint Code') {
             steps {
                 sh '''
-                flake8 app || true
+                python3 -m flake8 app || true
                 '''
             }
         }
@@ -79,7 +79,7 @@ pipeline {
             echo "✅ CI/CD Pipeline completed successfully"
         }
         failure {
-            echo "❌ Pipeline failed"
+            echo "❌ CI/CD Pipeline failed"
         }
     }
 }
